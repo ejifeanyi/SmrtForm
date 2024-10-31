@@ -1,6 +1,5 @@
 "use server";
 
-import { Description } from "@radix-ui/react-dialog";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
