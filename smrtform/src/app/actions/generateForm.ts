@@ -3,15 +3,15 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
-export async function generateForm(
-	prevState: {
-		message: string;
-	},
-	formData: FormData
-) {
+export async function generateForm(event: React.FormEvent<HTMLFormElement>) {
+	event.preventDefault(); // Prevent default form submission
+
+	const formData = new FormData(event.currentTarget); // Extract FormData from the event
+
 	const schema = z.object({
 		description: z.string().min(1),
 	});
+
 	const parse = schema.safeParse({
 		description: formData.get("description"),
 	});

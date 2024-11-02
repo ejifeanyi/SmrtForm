@@ -1,27 +1,23 @@
 "use client";
-import React, { useActionState, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
 	Dialog,
 	DialogContent,
-	DialogDescription,
 	DialogHeader,
 	DialogTitle,
-	DialogTrigger,
 	DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-
 import { generateForm } from "@/actions/generateForm";
+import { useSession, signIn } from "next-auth/react";
 import { useFormStatus } from "react-dom";
 
 type Props = {};
 
-const initialState: {
-	message: string;
-	data?: any;
-} = {
+const initialState = {
 	message: "",
+	data: undefined,
 };
 
 export function SubmitButton() {
@@ -37,18 +33,20 @@ export function SubmitButton() {
 }
 
 const FormGenerator = (props: Props) => {
-	const [state, formAction] = useActionState(generateForm, initialState);
+	const [state, setState] = useState(initialState);
 	const [open, setOpen] = useState(false);
+	const { data: session } = useSession();
 
 	useEffect(() => {
-		if (state.message === "success") {
-			setOpen(false);
-		}
-		console.log(state.data);
+		if (state.message === "success") setOpen(false);
 	}, [state.message]);
 
 	const onFormCreate = () => {
-		setOpen(true);
+		if (session?.user) {
+			setOpen(true);
+		} else {
+			signIn("google");
+		}
 	};
 
 	return (
@@ -61,13 +59,13 @@ const FormGenerator = (props: Props) => {
 				<DialogHeader>
 					<DialogTitle>Create New Form</DialogTitle>
 				</DialogHeader>
-				<form action={formAction}>
+				<form onSubmit={generateForm}>
 					<div className="grid gap-4 py-4">
 						<Textarea
 							id="description"
 							name="description"
 							required
-							placeholder="Share what your form is about, who is it for, and what information you would like to collect. AI will do the magic!"
+							placeholder="Share what your form is about, who it's for, and what information you would like to collect."
 						/>
 					</div>
 					<DialogFooter>

@@ -3,17 +3,12 @@
 import React from "react";
 import { signIn, signOut, useSession } from "next-auth/react";
 import { Button } from "./button";
-import Link from "next/link";
 import Image from "next/image";
 
 const Header = () => {
 	const { data: session, status } = useSession();
 
-	if (status === "loading") {
-		return <div>Loading...</div>;
-	}
-
-	console.log("session", session);
+	if (status === "loading") return <div>Loading...</div>;
 
 	return (
 		<header className="border-b">

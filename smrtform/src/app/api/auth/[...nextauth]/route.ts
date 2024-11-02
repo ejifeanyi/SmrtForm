@@ -1,37 +1,42 @@
-import NextAuth, { NextAuthOptions } from "next-auth";
+import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
-import { DefaultSession } from "next-auth";
+import { DrizzleAdapter } from "@auth/drizzle-adapter";
+import { db } from "@/db/index";
 
-declare module "next-auth" {
-	interface Session extends DefaultSession {
-		user: {
-			id: string;
-		} & DefaultSession["user"];
-	}
-}
-
-export const authOptions: NextAuthOptions = {
+export const { handlers, auth, signIn, signOut } = NextAuth({
+	session: { strategy: "jwt" },
+	adapter: DrizzleAdapter(db),
+	pages: {
+		signIn: "/login",
+	},
 	providers: [
 		GoogleProvider({
 			clientId: process.env.GOOGLE_CLIENT_ID!,
 			clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+			allowDangerousEmailAccountLinking: true,
 		}),
 	],
 	callbacks: {
-		session({ session, token }) {
-			if (session.user) {
-				session.user.id = token.sub!;
+		jwt: ({ token, user }: { token: any; user?: any }) => {
+			if (user) {
+				const u = user as any;
+				return {
+					...token,
+					id: u.id,
+					randomKey: u.randomKey,
+				};
 			}
-			return session;
+			return token;
+		},
+		session({ session, token }: { session: any; token: any }) {
+			return {
+				...session,
+				user: {
+					...session.user,
+					id: token.id as string,
+					randomKey: token.randomKey,
+				},
+			};
 		},
 	},
-	secret: process.env.NEXTAUTH_SECRET,
-	pages: {
-		signIn: "/auth/signin",
-		signOut: "/auth/signout",
-		error: "/auth/error",
-	},
-};
-
-const handler = NextAuth(authOptions);
-export { handler as GET, handler as POST };
+});
