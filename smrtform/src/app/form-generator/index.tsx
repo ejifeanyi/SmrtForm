@@ -15,7 +15,12 @@ import { useFormStatus } from "react-dom";
 
 type Props = {};
 
-const initialState = {
+type State = {
+	message: string;
+	data?: any;
+};
+
+const initialState: State = {
 	message: "",
 	data: undefined,
 };
@@ -33,7 +38,7 @@ export function SubmitButton() {
 }
 
 const FormGenerator = (props: Props) => {
-	const [state, setState] = useState(initialState);
+	const [state, setState] = useState<State>(initialState);
 	const [open, setOpen] = useState(false);
 	const { data: session } = useSession();
 
@@ -49,6 +54,33 @@ const FormGenerator = (props: Props) => {
 		}
 	};
 
+	const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+		event.preventDefault();
+		const formData = new FormData(event.currentTarget);
+		const description = formData.get("description") as string;
+
+		try {
+			const result = await generateForm(description);
+			console.log("Form generation result:", result);
+			setState({
+				message: result.message,
+				data: result.data ?? null,
+			});
+
+			if (result.message === "success") {
+				console.log("Generated form data:", result.data);
+			} else {
+				console.error("Form generation failed:", result.message);
+			}
+		} catch (error) {
+			console.error("Error generating form:", error);
+			setState({
+				message: "error",
+				data: null,
+			});
+		}
+	};
+
 	return (
 		<Dialog
 			open={open}
@@ -59,7 +91,7 @@ const FormGenerator = (props: Props) => {
 				<DialogHeader>
 					<DialogTitle>Create New Form</DialogTitle>
 				</DialogHeader>
-				<form onSubmit={generateForm}>
+				<form onSubmit={handleSubmit}>
 					<div className="grid gap-4 py-4">
 						<Textarea
 							id="description"
@@ -70,7 +102,12 @@ const FormGenerator = (props: Props) => {
 					</div>
 					<DialogFooter>
 						<SubmitButton />
-						<Button variant="link">Create Manually</Button>
+						<Button
+							type="button"
+							variant="link"
+						>
+							Create Manually
+						</Button>
 					</DialogFooter>
 				</form>
 			</DialogContent>
