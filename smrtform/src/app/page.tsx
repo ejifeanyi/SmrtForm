@@ -1,7 +1,11 @@
 import FormGenerator from "./form-generator";
 import Header from "@/components/ui/header";
+import { db } from "@/db/index";
+import { forms } from '@/db/schema'
 
-export default function Home() {
+export default async function Home() {
+	const formsData = await db.select().from(forms);
+	console.log(formsData);
 	return (
 		<>
 			<Header />
