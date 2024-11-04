@@ -89,7 +89,9 @@ export const formsRelations = relations(forms, ({ many, one }) => ({
 
 export const questions = pgTable("questions", {
 	id: uuid("id").primaryKey().defaultRandom(),
-	formId: integer("form_id"),
+	formId: uuid("form_id")
+		.notNull()
+		.references(() => forms.id),
 	text: text("text"),
 	fieldType: formElements("field_type"),
 });
@@ -106,7 +108,9 @@ export const fieldOptions = pgTable("field_options", {
 	id: uuid("id").primaryKey().defaultRandom(),
 	text: text("text"),
 	value: text("value"),
-	questionId: integer("question_id"),
+	questionId: uuid("question_id")
+		.notNull()
+		.references(() => questions.id),
 });
 
 export const fieldOptionsRelations = relations(fieldOptions, ({ one }) => ({

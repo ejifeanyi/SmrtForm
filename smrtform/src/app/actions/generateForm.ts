@@ -1,12 +1,13 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { z } from "zod";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { z } from "zod";
+import { saveForm } from "./mutateForm";
+import { questions } from "@/db/schema";
 
-export async function generateForm(description: string) {
-	console.log("Starting form generation with description:", description);
-
+// Input validation function
+async function validateInput(description: string) {
 	const schema = z.object({
 		description: z.string().min(1),
 	});
@@ -16,28 +17,25 @@ export async function generateForm(description: string) {
 	});
 
 	if (!parse.success) {
-		console.log("Validation error:", parse.error);
-		return {
-			message: "Failed to parse data",
-		};
+		console.error("Validation error:", parse.error);
+		throw new Error("Failed to parse data");
 	}
 
-	if (!process.env.GEMINI_API_KEY) {
-		console.log("Missing Google Gemini API Key");
-		return {
-			message: "No Google Gemini API Key found",
-		};
-	}
+	return parse.data;
+}
 
-	const data = parse.data;
-	// Modified prompt to be more explicit about JSON structure
-	const promptExplanation = `Generate a JSON object with a 'questions' array for a survey form. Each question should have:
+// Function to generate the form content
+async function generateFormContent(description: string): Promise<string> {
+	console.log("Generating form content with description:", description);
+
+	const promptExplanation = `Based on the descriiption, generate a survey with 3 fields: name(string) for the form, description(string) for the form, and a JSON object with a 'questions' array for a survey form. Each question should have:
   1. 'text' (string): The question text
   2. 'fieldType' (string): One of: "RadioGroup", "Select", "Input", "Textarea", "Switch"
-  3. 'fieldOptions' (array): For RadioGroup and Select, include options like [{text: "Yes", value: "yes"}]. For other types, use empty array [].
+  3. 'fieldOptions' (array): For RadioGroup and Select, include options like [{text: "Yes", "value": "yes"}]. For other types, use empty array [].
   
   Return ONLY the JSON object, no explanation or markdown formatting. Example format:
-  {
+  {"name": "The name",
+  "description": "the description",
     "questions": [
       {
         "text": "Question text here",
@@ -48,60 +46,62 @@ export async function generateForm(description: string) {
   }`;
 
 	try {
-		console.log("Setting up Google Gemini client...");
-		const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+		const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 		const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-
-		console.log("Sending request to Google Gemini...");
 		const result = await model.generateContent(
-			`${data.description} ${promptExplanation}`
+			`${description} ${promptExplanation}`
 		);
+		const response = await result.response.text();
 
-		const response = result.response.text();
-		console.log("Raw response:", response); // Debug log
-
-		try {
-			// Enhanced cleaning of the response
-			let cleanResponse = response
-				.replace(/```json\s*|\s*```/g, "") // Remove JSON code blocks
-				.replace(/^\s*\{\s*/, "{") // Clean start
-				.replace(/\s*\}\s*$/, "}") // Clean end
-				.trim();
-
-			// Debug log
-			console.log("Cleaned response:", cleanResponse);
-
-			// Additional validation to ensure we have a JSON object
-			if (!cleanResponse.startsWith("{") || !cleanResponse.endsWith("}")) {
-				throw new Error("Response is not a JSON object");
-			}
-
-			const parsedContent = JSON.parse(cleanResponse);
-
-			// Validate basic structure
-			if (!parsedContent.questions || !Array.isArray(parsedContent.questions)) {
-				throw new Error("Invalid response structure - missing questions array");
-			}
-
-			console.log("Successfully parsed JSON:", parsedContent);
-
-			revalidatePath("/");
-			return {
-				message: "success",
-				data: parsedContent,
-			};
-		} catch (e) {
-			console.error("JSON parsing error:", e);
-			console.error("Failed response:", response); // Log the failed response
-			return {
-				message: "Failed to parse JSON response",
-				error: e instanceof Error ? e.message : "Unknown parsing error",
-			};
-		}
+		// Clean the response without parsing it into a JSON object
+		let cleanResponse = response.replace(/```json\s*|\s*```/g, "").trim();
+		return cleanResponse;
 	} catch (error) {
 		console.error("Error in form generation:", error);
+		throw error;
+	}
+}
+
+export async function generateForm(description: string) {
+	try {
+		const data = await validateInput(description);
+		const formContent = await generateFormContent(data.description);
+
+		// Parse the form content to get the questions
+		let parsedContent;
+		try {
+			parsedContent = JSON.parse(formContent);
+		} catch (error) {
+			console.error("Error parsing form content:", error);
+			throw new Error("Failed to parse form content");
+		}
+
+		console.log("parsedContent: ", parsedContent);
+
+		// Save the form to the database
+		const dbFormId = await saveForm({
+			name: parsedContent.name,
+			description: parsedContent.description,
+			questions: parsedContent.questions,
+		});
+
+		console.log("dbFormId: ", dbFormId);
+
+		// Revalidate the homepage path
+		revalidatePath("/");
+
 		return {
-			message: "Failed to create form",
+			message: "success",
+			data: {
+				formId: dbFormId,
+				formContent: parsedContent,
+			},
 		};
+	} catch (error) {
+		if (error instanceof Error) {
+			throw new Error(error.message);
+		} else {
+			throw new Error("An unknown error occurred.");
+		}
 	}
 }
