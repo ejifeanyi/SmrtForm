@@ -7,7 +7,6 @@ import {
 	uuid,
 	boolean,
 	pgEnum,
-	serial,
 } from "drizzle-orm/pg-core";
 import type { AdapterAccount } from "next-auth/adapters";
 import { relations } from "drizzle-orm";
@@ -75,7 +74,9 @@ export const forms = pgTable("forms", {
 	id: uuid("id").primaryKey().defaultRandom(),
 	name: text("name"),
 	description: text("description"),
-	userId: text("user_id"),
+	userId: uuid("user_id")
+		.notNull()
+		.references(() => users.id),
 	published: boolean("published"),
 });
 

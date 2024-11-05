@@ -1,21 +1,22 @@
 "use server";
 
 import { forms, questions as dbQuestions, fieldOptions } from "@/db/schema";
-import NextAuth from "next-auth";
 import { db } from "@/db/index";
-import { authOptions } from "../api/auth/[...nextauth]/route";
+import { eq } from "drizzle-orm";
 
 export async function saveForm(data: any) {
-	const { name, description, questions } = data;
-	const session = await NextAuth(authOptions);
-	const userId = session?.user?.id;
+	const { name, description, questions, userId } = data;
+
+	if (!userId) {
+		throw new Error("User ID is required to save the form.");
+	}
 
 	const newForm = await db
 		.insert(forms)
 		.values({
 			name,
 			description,
-			userId,
+			userId, // Insert with provided userId
 			published: false,
 		})
 		.returning({ insertedId: forms.id });
@@ -48,4 +49,8 @@ export async function saveForm(data: any) {
 	});
 
 	return formId;
+}
+
+export async function publishForm(formId: any) {
+	await db.update(forms).set({ published: true }).where(eq(forms.id, formId));
 }

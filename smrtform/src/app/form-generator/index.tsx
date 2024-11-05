@@ -13,6 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { generateForm } from "@/actions/generateForm";
 import { useSession, signIn } from "next-auth/react";
 import { useFormStatus } from "react-dom";
+import { navigate } from "@/actions/navigateToForm";
 
 type Props = {};
 
@@ -44,7 +45,10 @@ const FormGenerator = (props: Props) => {
 	const { data: session } = useSession();
 
 	useEffect(() => {
-		if (state.message === "success") setOpen(false);
+		if (state.message === "success") {
+			setOpen(false);
+			navigate(state.data.formId);
+		}
 	}, [state.message]);
 
 	const onFormCreate = () => {
