@@ -139,9 +139,7 @@ export const answers = pgTable("answers", {
 	formSubmissionId: uuid("form_submission_id")
 		.notNull()
 		.references(() => formSubmissions.id),
-	fieldOptionsId: uuid("field_options_id")
-		.notNull()
-		.references(() => fieldOptions.id),
+	fieldOptionsId: uuid("field_options_id").references(() => fieldOptions.id),
 });
 
 export const answersRelations = relations(answers, ({ one }) => ({
