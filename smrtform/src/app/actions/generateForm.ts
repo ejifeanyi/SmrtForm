@@ -1,5 +1,3 @@
-// Separate file: src/app/actions/generateForm.ts
-
 "use server";
 
 import { revalidatePath } from "next/cache";
