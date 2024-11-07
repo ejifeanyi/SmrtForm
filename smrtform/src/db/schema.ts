@@ -86,6 +86,7 @@ export const formsRelations = relations(forms, ({ many, one }) => ({
 		fields: [forms.userId],
 		references: [users.id],
 	}),
+	submissions: many(formSubmissions),
 }));
 
 export const questions = pgTable("questions", {
@@ -103,6 +104,7 @@ export const questionsRelations = relations(questions, ({ one, many }) => ({
 		references: [forms.id],
 	}),
 	fieldOptions: many(fieldOptions),
+	answers: many(answers),
 }));
 
 export const fieldOptions = pgTable("field_options", {
@@ -120,3 +122,50 @@ export const fieldOptionsRelations = relations(fieldOptions, ({ one }) => ({
 		references: [questions.id],
 	}),
 }));
+
+export const formSubmissions = pgTable("form_submissions", {
+	id: uuid("id").primaryKey().defaultRandom(),
+	formId: uuid("form_id")
+		.notNull()
+		.references(() => forms.id),
+});
+
+export const answers = pgTable("answers", {
+	id: uuid("id").primaryKey().defaultRandom(),
+	value: text("value"),
+	questionId: uuid("question_id")
+		.notNull()
+		.references(() => questions.id),
+	formSubmissionId: uuid("form_submission_id")
+		.notNull()
+		.references(() => formSubmissions.id),
+	fieldOptionsId: uuid("field_options_id")
+		.notNull()
+		.references(() => fieldOptions.id),
+});
+
+export const answersRelations = relations(answers, ({ one }) => ({
+	question: one(questions, {
+		fields: [answers.questionId],
+		references: [questions.id],
+	}),
+	formSubmission: one(formSubmissions, {
+		fields: [answers.formSubmissionId],
+		references: [formSubmissions.id],
+	}),
+	fieldOption: one(fieldOptions, {
+		fields: [answers.fieldOptionsId],
+		references: [fieldOptions.id],
+	}),
+}));
+
+export const formSubmissionsRelations = relations(
+	formSubmissions,
+	({ one, many }) => ({
+		form: one(forms, {
+			fields: [formSubmissions.formId],
+			references: [forms.id],
+		}),
+		answers: many(answers),
+	})
+);
