@@ -1,5 +1,10 @@
 import { db } from "@/db/index";
-import { forms, formSubmissions, answers as dbAnswers } from "@/db/schema";
+import {
+	forms,
+	formSubmissions,
+	answers as dbAnswers,
+	questions,
+} from "@/db/schema";
 
 export async function POST(request: Request): Promise<Response> {
 	const data = await request.json();
@@ -13,15 +18,6 @@ export async function POST(request: Request): Promise<Response> {
 		});
 
 	const [{ insertedId }] = newFormsubmission;
-
-	await db.transaction(async (tx) => {
-		for (const answer of data.answers) {
-			const [{ answerId }] = await tx
-				.insert(dbAnswers)
-				.values({ formSubmissionId: insertedId, ...answer })
-				.returning({ answerId: dbAnswers.id });
-		}
-	});
 
 	return Response.json({ formSubmissionsId: insertedId }, { status: 200 });
 }

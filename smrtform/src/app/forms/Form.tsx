@@ -56,7 +56,7 @@ const Form = (props: Props) => {
 			const answers: Answer[] = [];
 
 			for (const [questionId, value] of Object.entries(data)) {
-				const id = questionId.replace("question_", ""); // Fixed typo
+				const id = questionId.replace("question_", "");
 				let fieldOptionsId: string | null = null;
 				let textValue: string | null = null;
 
@@ -75,18 +75,25 @@ const Form = (props: Props) => {
 				});
 			}
 
-			try {
-				const response = await SubmitAnswers({
-					formId: props.form.id,
-					answers,
-				});
+			const baseUrl =
+				process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
 
-				if (response.success) {
-					router.push("/forms/submit-success");
+			try {
+				const response = await fetch(`${baseUrl}/api/form/new`, {
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+					},
+					body: JSON.stringify({ formId: props.form.id, answers }),
+				});
+				if (response.status === 200) {
+					router.push("/forms/success");
 				}
 			} catch (error) {
 				console.error("Error submitting form:", error);
-				alert("An error occured while submitting the form");
+				alert(
+					"An error occured while submitting the form. Please try again later"
+				);
 			}
 		}
 	};
