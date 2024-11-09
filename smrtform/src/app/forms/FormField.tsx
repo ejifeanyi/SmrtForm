@@ -20,30 +20,45 @@ type Props = {
 	element: QuestionSelectModel & {
 		fieldOptions: Array<FieldOptionSelectModel>;
 	};
-	value: string;
-	onChange: (value: string | ChangeEvent<HTMLInputElement>) => void;
+	value: string | boolean;
+	onChange: (value: string | boolean | ChangeEvent<HTMLInputElement>) => void;
 };
 
 const FormField = ({ element, value, onChange }: Props) => {
 	if (!element) return null;
+
 	const components = {
 		Input: () => (
 			<Input
 				type="text"
-				onChange={onChange}
+				value={value as string}
+				onChange={(e) => onChange(e.target.value)}
 			/>
 		),
-		Switch: () => <Switch />,
-		Textarea: () => <Textarea />,
+		Switch: () => (
+			<Switch
+				checked={Boolean(value)}
+				onCheckedChange={(checked) => onChange(checked)}
+			/>
+		),
+		Textarea: () => (
+			<Textarea
+				value={value as string}
+				onChange={(e) => onChange(e.target.value)}
+			/>
+		),
 		Select: () => (
-			<Select onValueChange={onChange}>
+			<Select
+				value={value as string}
+				onValueChange={onChange}
+			>
 				<SelectTrigger>
-					<SelectValue>Select an option</SelectValue>
+					<SelectValue placeholder="Select an option" />
 				</SelectTrigger>
 				<SelectContent>
-					{element.fieldOptions.map((option, index) => (
+					{element.fieldOptions.map((option) => (
 						<SelectItem
-							key={`${option.text} ${option.value}`}
+							key={`${option.text}_${option.id}`}
 							value={`answerId_${option.id}`}
 						>
 							{option.text}
@@ -53,10 +68,13 @@ const FormField = ({ element, value, onChange }: Props) => {
 			</Select>
 		),
 		RadioGroup: () => (
-			<RadioGroup onValueChange={onChange}>
-				{element.fieldOptions.map((option, index) => (
+			<RadioGroup
+				value={value as string}
+				onValueChange={onChange}
+			>
+				{element.fieldOptions.map((option) => (
 					<div
-						key={`${option.text} ${option.value}`}
+						key={`${option.text}_${option.id}`}
 						className="flex items-center space-x-2"
 					>
 						<FormControl>
