@@ -1,9 +1,9 @@
-import React, { ChangeEvent } from "react";
-
+// FormField.tsx
+import React from "react";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { FormControl, FormLabel } from "@/components/ui/form";
+import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
 	Select,
@@ -12,26 +12,27 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { QuestionSelectModel } from "../../../types/form-types";
-import { FieldOptionSelectModel } from "../../../types/form-types";
-import { Label } from "@/components/ui/label";
+import type {
+	QuestionSelectModel,
+	FieldOptionSelectModel,
+} from "../../../types/form-types";
 
-type Props = {
+interface FormFieldProps {
 	element: QuestionSelectModel & {
 		fieldOptions: Array<FieldOptionSelectModel>;
 	};
 	value: string | boolean;
-	onChange: (value: string | boolean | ChangeEvent<HTMLInputElement>) => void;
-};
+	onChange: (value: string | boolean) => void;
+}
 
-const FormField = ({ element, value, onChange }: Props) => {
-	if (!element) return null;
+const FormField: React.FC<FormFieldProps> = ({ element, value, onChange }) => {
+	if (!element?.fieldType) return null;
 
-	const components = {
+	const fieldComponents: Record<string, () => JSX.Element | null> = {
 		Input: () => (
 			<Input
 				type="text"
-				value={value as string}
+				value={String(value)}
 				onChange={(e) => onChange(e.target.value)}
 			/>
 		),
@@ -43,13 +44,13 @@ const FormField = ({ element, value, onChange }: Props) => {
 		),
 		Textarea: () => (
 			<Textarea
-				value={value as string}
+				value={String(value)}
 				onChange={(e) => onChange(e.target.value)}
 			/>
 		),
 		Select: () => (
 			<Select
-				value={value as string}
+				value={String(value)}
 				onValueChange={onChange}
 			>
 				<SelectTrigger>
@@ -58,10 +59,10 @@ const FormField = ({ element, value, onChange }: Props) => {
 				<SelectContent>
 					{element.fieldOptions.map((option) => (
 						<SelectItem
-							key={`${option.text}_${option.id}`}
+							key={option.id}
 							value={`answerId_${option.id}`}
 						>
-							{option.text}
+							{option.text || ""}
 						</SelectItem>
 					))}
 				</SelectContent>
@@ -69,32 +70,31 @@ const FormField = ({ element, value, onChange }: Props) => {
 		),
 		RadioGroup: () => (
 			<RadioGroup
-				value={value as string}
+				value={String(value)}
 				onValueChange={onChange}
 			>
 				{element.fieldOptions.map((option) => (
 					<div
-						key={`${option.text}_${option.id}`}
+						key={option.id}
 						className="flex items-center space-x-2"
 					>
-						<FormControl>
-							<RadioGroupItem
-								value={`answerId_${option.id}`}
-								id={option?.value.toString() || `answerId_${option.id}`}
-							>
-								{option.text}
-							</RadioGroupItem>
-						</FormControl>
-						<Label className="text-base">{option.text}</Label>
+						<RadioGroupItem
+							value={`answerId_${option.id}`}
+							id={`answerId_${option.id}`}
+						/>
+						<Label
+							htmlFor={`answerId_${option.id}`}
+							className="text-base"
+						>
+							{option.text || ""}
+						</Label>
 					</div>
 				))}
 			</RadioGroup>
 		),
 	};
 
-	return element.fieldType && components[element.fieldType]
-		? components[element.fieldType]()
-		: null;
+	return fieldComponents[element.fieldType]?.() || null;
 };
 
 export default FormField;
