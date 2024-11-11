@@ -13,7 +13,7 @@ import { Label } from "@/components/ui/label";
 
 type SelectProps = {
 	value: string;
-	labal?: string | null;
+	label?: string | null;
 };
 
 type FormsPickerProps = {
@@ -23,7 +23,20 @@ type FormsPickerProps = {
 const FormsPicker = (props: FormsPickerProps) => {
 	const { options } = props;
 	return (
-		<div>
+		<div className="flex gap-2 items-center">
+			<Label className="font-bold">Select a form</Label>
+			<Select>
+				<SelectTrigger className="w-[180px]">
+					<SelectValue placeholder={options[0].label} />
+				</SelectTrigger>
+				<SelectContent>
+					<SelectGroup>
+						{options.map((option) => (
+							<SelectItem value={option.value}>{option.label}</SelectItem>
+						))}
+					</SelectGroup>
+				</SelectContent>
+			</Select>
 			{options.map((option) => (
 				<p>{option.label}</p>
 			))}
