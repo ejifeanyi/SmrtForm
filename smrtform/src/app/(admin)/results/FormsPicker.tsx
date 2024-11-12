@@ -10,6 +10,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 
 type SelectProps = {
 	value: string;
@@ -22,24 +23,47 @@ type FormsPickerProps = {
 
 const FormsPicker = (props: FormsPickerProps) => {
 	const { options } = props;
+
+	const searchParams = useSearchParams();
+	const router = useRouter();
+	const pathname = usePathname();
+
+	const formId = searchParams.get("formId") || options[0].value.toString();
+
+	const createQueryString = useCallback(
+		(name: string, value: string) => {
+			const params = new URLSearchParams(searchParams.toString());
+			params.set(name, value);
+			return params.toString();
+		},
+		[searchParams]
+	);
+
 	return (
 		<div className="flex gap-2 items-center">
 			<Label className="font-bold">Select a form</Label>
-			<Select>
+			<Select
+				value={formId}
+				onValueChange={(value) =>
+					router.push(pathname + "?" + createQueryString("formId", value))
+				}
+			>
 				<SelectTrigger className="w-[180px]">
 					<SelectValue placeholder={options[0].label} />
 				</SelectTrigger>
 				<SelectContent>
 					<SelectGroup>
 						{options.map((option) => (
-							<SelectItem value={option.value}>{option.label}</SelectItem>
+							<SelectItem
+								key={option.value}
+								value={option.value}
+							>
+								{option.label}
+							</SelectItem>
 						))}
 					</SelectGroup>
 				</SelectContent>
 			</Select>
-			{options.map((option) => (
-				<p>{option.label}</p>
-			))}
 		</div>
 	);
 };

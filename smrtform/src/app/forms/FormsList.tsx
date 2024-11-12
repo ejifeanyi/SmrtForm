@@ -24,9 +24,9 @@ const FormsList = (props: Props) => {
 			{props.forms.map((form: Form) => (
 				<Card
 					key={form.id}
-					className="max-w-[350px]"
+					className="max-w-[350px] flex flex-col"
 				>
-					<CardHeader>
+					<CardHeader className="flex-1">
 						<CardTitle>{form.name}</CardTitle>
 						<CardDescription>{form.description}</CardDescription>
 					</CardHeader>

@@ -4,6 +4,7 @@ import React from "react";
 import { signIn, signOut, useSession } from "next-auth/react";
 import { Button } from "./button";
 import Image from "next/image";
+import Link from "next/link";
 
 const Header = () => {
 	const { data: session, status } = useSession();
@@ -17,6 +18,9 @@ const Header = () => {
 					<h1>smrtForm</h1>
 					{session?.user ? (
 						<div className="flex items-center gap-4">
+							<Link href="/view-forms">
+								<Button variant="outline">Dashboard</Button>
+							</Link>
 							{session.user.image && (
 								<Image
 									src={session.user.image}
