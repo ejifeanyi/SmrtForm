@@ -4,12 +4,10 @@ import { InferSelectModel } from "drizzle-orm";
 import { forms } from "@/db/schema";
 import FormsPicker from "./FormsPicker";
 import ResultsDisplay from "./ResultsDisplay";
+import { useSearchParams } from "next/navigation";
 
-const Page = async ({
-	searchParams,
-}: {
-	searchParams: Record<string, string | string[] | undefined>;
-}) => {
+const Page = async () => {
+	const searchParams = useSearchParams();
 	const userForms: Array<InferSelectModel<typeof forms>> = await getUserForms();
 
 	if (!userForms || userForms.length === 0) {
@@ -22,7 +20,7 @@ const Page = async ({
 	}));
 
 	// Parse `id` from `searchParams`
-	const formId = searchParams.id ? String(searchParams.id) : userForms[0].id;
+	const formId = searchParams.get("id") ?? userForms[0].id;
 
 	return (
 		<div>
