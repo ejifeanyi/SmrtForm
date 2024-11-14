@@ -10,7 +10,7 @@ interface PageProps {
 	searchParams: Record<string, string | string[] | undefined>;
 }
 
-const Page = async ({ params, searchParams }: PageProps) => {
+const Page = async ({ searchParams }: PageProps) => {
 	const userForms: Array<InferSelectModel<typeof forms>> = await getUserForms();
 
 	if (!userForms || userForms.length === 0) {
