@@ -5,12 +5,12 @@ import { forms } from "@/db/schema";
 import FormsPicker from "./FormsPicker";
 import ResultsDisplay from "./ResultsDisplay";
 
-interface PageProps {
-	params: { [key: string]: string };
-	searchParams: Record<string, string | string[] | undefined>;
-}
+// Define the props based on Next.js 14's generated types
+type Props = {
+	searchParams: { [key: string]: string | string[] | undefined };
+};
 
-const Page = async ({ searchParams }: PageProps) => {
+const Page = async ({ searchParams }: Props) => {
 	const userForms: Array<InferSelectModel<typeof forms>> = await getUserForms();
 
 	if (!userForms || userForms.length === 0) {
