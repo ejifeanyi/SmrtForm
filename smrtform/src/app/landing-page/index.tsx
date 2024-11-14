@@ -2,9 +2,7 @@ import React from "react";
 import Image from "next/image";
 import FormGenerator from "../form-generator";
 
-type Props = {};
-
-const LandingPage = (props: Props) => {
+const LandingPage = () => {
 	return (
 		<>
 			<section

@@ -4,9 +4,7 @@ import { getUserForms } from "@/app/actions/getUserForms";
 import { InferSelectModel } from "drizzle-orm";
 import { forms as dbForms } from "@/db/schema";
 
-type Props = {};
-
-const page = async (props: Props) => {
+const page = async () => {
 	const forms: InferSelectModel<typeof dbForms>[] = await getUserForms();
 
 	return (

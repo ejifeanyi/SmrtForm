@@ -15,12 +15,26 @@ import { useSession, signIn } from "next-auth/react";
 import { useFormStatus } from "react-dom";
 import { navigate } from "@/actions/navigateToForm";
 
-type Props = {};
+interface FormData {
+	formId: string;
+	formContent: {
+		name: string;
+		description: string;
+		questions: Array<{
+			text: string;
+			fieldType: "RadioGroup" | "Select" | "Input" | "Textarea" | "Switch";
+			fieldOptions: Array<{
+				text: string;
+				value: string;
+			}>;
+		}>;
+	};
+}
 
-type State = {
+interface State {
 	message: string;
-	data?: any;
-};
+	data?: FormData | null;
+}
 
 const initialState: State = {
 	message: "",
@@ -39,17 +53,17 @@ export function SubmitButton() {
 	);
 }
 
-const FormGenerator = (props: Props) => {
+const FormGenerator = () => {
 	const [state, setState] = useState<State>(initialState);
 	const [open, setOpen] = useState(false);
 	const { data: session } = useSession();
 
 	useEffect(() => {
-		if (state.message === "success") {
+		if (state.message === "success" && state.data?.formId) {
 			setOpen(false);
 			navigate(state.data.formId);
 		}
-	}, [state.message]);
+	}, [state.message, state.data]);
 
 	const onFormCreate = () => {
 		if (session?.user) {
@@ -69,7 +83,7 @@ const FormGenerator = (props: Props) => {
 			console.log("Form generation result:", result);
 			setState({
 				message: result.message,
-				data: result.data ?? null,
+				data: result.data as FormData,
 			});
 
 			if (result.message === "success") {
