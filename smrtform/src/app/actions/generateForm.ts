@@ -50,7 +50,7 @@ async function generateFormContent(description: string) {
 		);
 		const response = await result.response.text();
 
-		let cleanResponse = response.replace(/```json\s*|\s*```/g, "").trim();
+		const cleanResponse = response.replace(/```json\s*|\s*```/g, "").trim();
 		return cleanResponse;
 	} catch (error) {
 		console.error("Error in form generation:", error);

@@ -4,7 +4,26 @@ import { forms, questions as dbQuestions, fieldOptions } from "@/db/schema";
 import { db } from "@/db/index";
 import { eq } from "drizzle-orm";
 
-export async function saveForm(data: any) {
+// Define types for the form data structure
+interface FieldOption {
+	text: string;
+	value: string;
+}
+
+interface Question {
+	text: string;
+	fieldType: "RadioGroup" | "Select" | "Input" | "Textarea" | "Switch";
+	fieldOptions: FieldOption[];
+}
+
+interface FormData {
+	name: string;
+	description: string;
+	questions: Question[];
+	userId: string;
+}
+
+export async function saveForm(data: FormData) {
 	const { name, description, questions, userId } = data;
 
 	if (!userId) {
@@ -16,13 +35,13 @@ export async function saveForm(data: any) {
 		.values({
 			name,
 			description,
-			userId, // Insert with provided userId
+			userId,
 			published: false,
 		})
 		.returning({ insertedId: forms.id });
 	const formId = newForm[0].insertedId;
 
-	const newQuestions = questions.map((question: any) => ({
+	const newQuestions = questions.map((question: Question) => ({
 		text: question.text,
 		fieldType: question.fieldType,
 		fieldOptions: question.fieldOptions,
@@ -38,7 +57,7 @@ export async function saveForm(data: any) {
 
 			if (question.fieldOptions && question.fieldOptions.length > 0) {
 				await tx.insert(fieldOptions).values(
-					question.fieldOptions.map((option: any) => ({
+					question.fieldOptions.map((option: FieldOption) => ({
 						text: option.text,
 						value: option.value,
 						questionId,
@@ -51,6 +70,6 @@ export async function saveForm(data: any) {
 	return formId;
 }
 
-export async function publishForm(formId: any) {
+export async function publishForm(formId: string) {
 	await db.update(forms).set({ published: true }).where(eq(forms.id, formId));
 }

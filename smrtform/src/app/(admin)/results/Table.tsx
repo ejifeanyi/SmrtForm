@@ -2,13 +2,7 @@
 
 import * as React from "react";
 import { InferSelectModel } from "drizzle-orm";
-import {
-	forms,
-	answers,
-	questions,
-	formSubmissions,
-	fieldOptions,
-} from "@/db/schema";
+import { answers, questions, formSubmissions, fieldOptions } from "@/db/schema";
 
 import {
 	createColumnHelper,

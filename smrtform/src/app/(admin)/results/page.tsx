@@ -5,8 +5,6 @@ import { forms } from "@/db/schema";
 import FormsPicker from "./FormsPicker";
 import ResultsDisplay from "./ResultsDisplay";
 
-type Props = {};
-
 const page = async ({
 	searchParams,
 }: {

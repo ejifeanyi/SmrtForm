@@ -24,7 +24,7 @@ const FormPublishSuccess = (props: Props) => {
 		navigator.clipboard
 			.writeText(baseUrl + "/forms/" + props.formId)
 			.then(() => alert("Copied to clipboard"))
-			.catch((error) => alert("Failed to copy to clipboard"));
+			.catch(() => alert("Failed to copy to clipboard"));
 	};
 
 	return (
