@@ -10,7 +10,11 @@ const LandingPage = () => {
 				id="hero"
 			>
 				<h1 className="text-4xl font-bold text-center tracking-tighter sm:text-5xl md:text-6xl leading-6">
-					Create your forms <br></br>in seconds not hours
+					Create your forms <br />
+					in{" "}
+					<span className="inline-block mt-4 text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-purple-500 to-orange-400 animate-gradient">
+						seconds not hours
+					</span>
 				</h1>
 				<p className="max-w-[600px] mt-4 text-center text-gray-500 md:textl-xl">
 					Generate, publish and share your form right away with AI. Dive into

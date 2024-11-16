@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { ThemeProvider } from "next-themes";
 import localFont from "next/font/local";
 import "./globals.css";
 import SessionProviderWrapper from "./SessionProviderWrapper";
@@ -30,16 +29,7 @@ export default function RootLayout({
 			<body
 				className={`${geistSans.variable} ${geistMono.variable} antialiased`}
 			>
-				<SessionProviderWrapper>
-					<ThemeProvider
-						attribute="class"
-						defaultTheme="system"
-						enableSystem
-						disableTransitionOnChange
-					>
-						{children}
-					</ThemeProvider>
-				</SessionProviderWrapper>
+				<SessionProviderWrapper>{children}</SessionProviderWrapper>
 			</body>
 		</html>
 	);
