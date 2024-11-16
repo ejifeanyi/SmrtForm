@@ -65,6 +65,7 @@ export async function generateForm(description: string) {
 		// Retrieve userId from session
 		const userId = session?.user?.id;
 		if (!userId) {
+			console.error("Error: User must be authenticated to create a form.");
 			throw new Error("User must be authenticated to create a form.");
 		}
 
